@@ -44,7 +44,9 @@ async function registerCommands() {
 
     await rest.put(
       Routes.applicationCommands(process.env.CLIENT_ID),
-      { body: commands }
+      {
+        body: commands,
+      }
     );
 
     console.log("Slash commands registered!");
@@ -55,12 +57,14 @@ async function registerCommands() {
 
 client.once("ready", () => {
   console.log("The Nest Wellness Bot is online!");
+  console.log("Logged in as " + client.user.tag);
 });
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
   const userId = interaction.user.id;
+
   const username =
     interaction.user.globalName ||
     interaction.user.username ||
@@ -70,6 +74,8 @@ client.on("interactionCreate", async (interaction) => {
 
   try {
     if (interaction.commandName === "checkin") {
+      const response = interaction.options.getString("response");
+
       user.checkins += 1;
       user.points += 10;
       user.streak += 1;
@@ -79,13 +85,20 @@ client.on("interactionCreate", async (interaction) => {
           "🪺 NEST CHECK-IN\n\n" +
           "Thanks for checking in, " +
           username +
-          "!\n" +
+          "!\n\n" +
           "Your check-in has been recorded privately.\n\n" +
-          "+10 Nest Points\n" +
-          "Current streak: " +
-          user.streak,
+          "💫 +10 Nest Points\n" +
+          "🔥 Current streak: " +
+          user.streak +
+          " day(s)",
         ephemeral: true,
       });
+
+      console.log(
+        username +
+          " completed a check-in: " +
+          response
+      );
     }
 
     else if (interaction.commandName === "water") {
@@ -102,7 +115,7 @@ client.on("interactionCreate", async (interaction) => {
         " glass" +
         (glasses === 1 ? "" : "es") +
         " of water!\n\n" +
-        "+5 Nest Points"
+        "🦉 +5 Nest Points"
       );
     }
 
@@ -118,7 +131,7 @@ client.on("interactionCreate", async (interaction) => {
         " just logged " +
         count.toLocaleString() +
         " steps!\n\n" +
-        "+10 Nest Points"
+        "🦉 +10 Nest Points"
       );
     }
 
@@ -137,7 +150,7 @@ client.on("interactionCreate", async (interaction) => {
         " for " +
         minutes +
         " minutes!\n\n" +
-        "+15 Nest Points"
+        "🦉 +15 Nest Points"
       );
     }
 
@@ -153,7 +166,7 @@ client.on("interactionCreate", async (interaction) => {
           "Your " +
           hours +
           "-hour sleep entry was recorded privately.\n\n" +
-          "+5 Nest Points",
+          "🦉 +5 Nest Points",
         ephemeral: true,
       });
     }
@@ -166,7 +179,7 @@ client.on("interactionCreate", async (interaction) => {
         "🌿 SELF-CARE SPOTTED!\n\n" +
         username +
         " made time for themselves today!\n\n" +
-        "+10 Nest Points"
+        "🦉 +10 Nest Points"
       );
     }
 
@@ -174,25 +187,25 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.reply({
         content:
           "📊 YOUR NEST PROGRESS\n\n" +
-          "Nest Points: " +
+          "🪺 Nest Points: " +
           user.points +
           "\n" +
-          "Check-ins: " +
+          "💬 Check-ins: " +
           user.checkins +
           "\n" +
-          "Water logs: " +
+          "💧 Water logs: " +
           user.water +
           "\n" +
-          "Steps: " +
+          "👟 Steps: " +
           user.steps.toLocaleString() +
           "\n" +
-          "Workouts: " +
+          "🏃 Workouts: " +
           user.workouts +
           "\n" +
-          "Sleep logs: " +
+          "😴 Sleep logs: " +
           user.sleep +
           "\n" +
-          "Self-care: " +
+          "🌿 Self-care: " +
           user.selfcare,
         ephemeral: true,
       });
@@ -213,22 +226,44 @@ client.on("interactionCreate", async (interaction) => {
     else if (interaction.commandName === "badges") {
       const badges = [];
 
-      if (user.checkins >= 1) badges.push("🪺 First Flight");
-      if (user.water >= 7) badges.push("💧 Hydration Hoot");
-      if (user.workouts >= 10) badges.push("👟 Wandering Owl");
-      if (user.selfcare >= 10) badges.push("🌿 Self-Care Owl");
-      if (user.streak >= 7) badges.push("🔥 Consistent Owl");
-      if (user.sleep >= 10) badges.push("🌙 Night Owl");
-      if (user.points >= 500) badges.push("🏆 Nest Champion");
+      if (user.checkins >= 1) {
+        badges.push("🪺 First Flight");
+      }
 
-      await interaction.reply(
-        "🏅 " +
-        username +
-        "'S NEST BADGES\n\n" +
-        (badges.length
-          ? badges.map((badge) => "• " + badge).join("\n")
-          : "🪺 No badges yet — your first flight is waiting!")
-      );
+      if (user.water >= 7) {
+        badges.push("💧 Hydration Hoot");
+      }
+
+      if (user.workouts >= 10) {
+        badges.push("👟 Wandering Owl");
+      }
+
+      if (user.selfcare >= 10) {
+        badges.push("🌿 Self-Care Owl");
+      }
+
+      if (user.streak >= 7) {
+        badges.push("🔥 Consistent Owl");
+      }
+
+      if (user.sleep >= 10) {
+        badges.push("🌙 Night Owl");
+      }
+
+      if (user.points >= 500) {
+        badges.push("🏆 Nest Champion");
+      }
+
+      await interaction.reply({
+        content:
+          "🏅 " +
+          username +
+          "'S NEST BADGES\n\n" +
+          (badges.length > 0
+            ? badges.map((badge) => "• " + badge).join("\n")
+            : "🪺 No badges yet — your first flight is waiting!"),
+        ephemeral: true,
+      });
     }
 
     else if (interaction.commandName === "leaderboard") {
@@ -257,7 +292,8 @@ client.on("interactionCreate", async (interaction) => {
           : "Nest Member";
 
         return (
-          (index + 1) +
+          index +
+          1 +
           ". " +
           name +
           " — " +
@@ -284,16 +320,20 @@ client.on("interactionCreate", async (interaction) => {
   } catch (error) {
     console.error("Interaction error:", error);
 
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "🦉 Something went wrong. Please try again!",
-        ephemeral: true,
-      });
-    } else {
-      await interaction.reply({
-        content: "🦉 Something went wrong. Please try again!",
-        ephemeral: true,
-      });
+    try {
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "🦉 Something went wrong. Please try again!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "🦉 Something went wrong. Please try again!",
+          ephemeral: true,
+        });
+      }
+    } catch (replyError) {
+      console.error("Could not send error response:", replyError);
     }
   }
 });
@@ -308,4 +348,3 @@ client.on("interactionCreate", async (interaction) => {
     process.exit(1);
   }
 })();
-```
