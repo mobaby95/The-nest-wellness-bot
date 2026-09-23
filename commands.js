@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("discord.js");
 
 const commands = [
 
-  // 🪺 CHECK-IN
+  // 🪺 DAILY CHECK-IN
   new SlashCommandBuilder()
     .setName("checkin")
     .setDescription("Share an open-ended wellness check-in")
@@ -20,7 +20,7 @@ const commands = [
     .addIntegerOption(option =>
       option
         .setName("glasses")
-        .setDescription("How many glasses of water did you drink?")
+        .setDescription("Number of glasses of water")
         .setMinValue(1)
         .setRequired(true)
     ),
@@ -32,7 +32,7 @@ const commands = [
     .addIntegerOption(option =>
       option
         .setName("count")
-        .setDescription("How many steps did you take?")
+        .setDescription("Number of steps")
         .setMinValue(1)
         .setRequired(true)
     ),
@@ -62,7 +62,7 @@ const commands = [
     .addNumberOption(option =>
       option
         .setName("hours")
-        .setDescription("How many hours did you sleep?")
+        .setDescription("Hours of sleep")
         .setMinValue(0)
         .setMaxValue(24)
         .setRequired(true)
@@ -79,25 +79,30 @@ const commands = [
         .setRequired(true)
     ),
 
-  // 📊 PROGRESS
+  // 📊 PERSONAL PROGRESS
   new SlashCommandBuilder()
     .setName("progress")
-    .setDescription("View your wellness progress"),
+    .setDescription("View your personal wellness progress"),
 
   // 🔥 STREAK
   new SlashCommandBuilder()
     .setName("streak")
-    .setDescription("View your wellness streak"),
+    .setDescription("View your Nest streak"),
 
   // 🏅 BADGES
   new SlashCommandBuilder()
     .setName("badges")
-    .setDescription("View your Nest wellness badges"),
+    .setDescription("View your Nest badges"),
+
+  // 🏆 LEADERBOARD
+  new SlashCommandBuilder()
+    .setName("leaderboard")
+    .setDescription("View The Nest leaderboard"),
 
   // 🎯 CHALLENGE
   new SlashCommandBuilder()
     .setName("challenge")
-    .setDescription("View the current Nest wellness challenge")
+    .setDescription("View the current Nest challenge")
 
 ];
 
