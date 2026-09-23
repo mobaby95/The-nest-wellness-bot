@@ -244,12 +244,119 @@ function updateCheckinStreak(userId) {
    BADGES
 ========================= */
 
+const BADGES = [
+  {
+    id: "first_flight",
+    name: "🪺 First Flight",
+    description: "Complete your first wellness check-in.",
+    requirement: user => user.checkins >= 1
+  },
+  {
+    id: "tiny_hoot",
+    name: "🐣 Tiny Hoot",
+    description: "Earn your first 25 lifetime points.",
+    requirement: user => user.lifetime_points >= 25
+  },
+  {
+    id: "finding_wings",
+    name: "🦉 Finding Your Wings",
+    description: "Complete 5 wellness check-ins.",
+    requirement: user => user.checkins >= 5
+  },
+  {
+    id: "hydration_hoot",
+    name: "💧 Hydration Hoot",
+    description: "Log 7 glasses of water.",
+    requirement: user => user.water >= 7
+  },
+  {
+    id: "water_bird",
+    name: "💦 Water Bird",
+    description: "Log 25 glasses of water.",
+    requirement: user => user.water >= 25
+  },
+  {
+    id: "wandering_owl",
+    name: "👟 Wandering Owl",
+    description: "Complete 10 workouts.",
+    requirement: user => user.workouts >= 10
+  },
+  {
+    id: "moving_grooving",
+    name: "🎶 Moving & Grooving",
+    description: "Complete 25 workouts.",
+    requirement: user => user.workouts >= 25
+  },
+  {
+    id: "self_care_owl",
+    name: "🌿 Self-Care Owl",
+    description: "Log 10 self-care activities.",
+    requirement: user => user.selfcare >= 10
+  },
+  {
+    id: "little_moments",
+    name: "🍃 Little Moments",
+    description: "Log 5 self-care activities.",
+    requirement: user => user.selfcare >= 5
+  },
+  {
+    id: "night_owl",
+    name: "🌙 Night Owl",
+    description: "Log 10 sleep entries.",
+    requirement: user => user.sleep >= 10
+  },
+  {
+    id: "consistent_owl",
+    name: "🔥 Consistent Owl",
+    description: "Reach a 7-day check-in streak.",
+    requirement: user => user.streak >= 7
+  },
+  {
+    id: "steady_wings",
+    name: "🔥 Steady Wings",
+    description: "Reach a 14-day check-in streak.",
+    requirement: user => user.streak >= 14
+  },
+  {
+    id: "strong_wings",
+    name: "🔥 Strong Wings",
+    description: "Reach a 30-day check-in streak.",
+    requirement: user => user.streak >= 30
+  },
+  {
+    id: "growing_wings",
+    name: "🪺 Growing Wings",
+    description: "Earn 250 lifetime points.",
+    requirement: user => user.lifetime_points >= 250
+  },
+  {
+    id: "nest_champion",
+    name: "🏆 Nest Champion",
+    description: "Earn 500 lifetime points.",
+    requirement: user => user.lifetime_points >= 500
+  },
+  {
+    id: "owl_of_the_nest",
+    name: "👑 Owl of the Nest",
+    description: "Earn 1,000 lifetime points.",
+    requirement: user => user.lifetime_points >= 1000
+  }
+];
+
 function getBadges(userId) {
   const user = db
-    .prepare("SELECT * FROM users WHERE user_id = ?")
+    .prepare("SELECT badges FROM users WHERE user_id = ?")
     .get(userId);
 
-  return JSON.parse(user.badges || "[]");
+  if (!user || !user.badges) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(user.badges);
+  } catch {
+    return [];
+  }
 }
 
 function saveBadges(userId, badges) {
@@ -265,45 +372,26 @@ function updateBadges(userId) {
     .prepare("SELECT * FROM users WHERE user_id = ?")
     .get(userId);
 
+  if (!user) {
+    return [];
+  }
+
   const badges = getBadges(userId);
+  const newlyEarned = [];
 
-  function award(name) {
-    if (!badges.includes(name)) {
-      badges.push(name);
+  for (const badge of BADGES) {
+    if (
+      badge.requirement(user) &&
+      !badges.includes(badge.id)
+    ) {
+      badges.push(badge.id);
+      newlyEarned.push(badge);
     }
-  }
-
-  if (user.checkins >= 1) {
-    award("🪺 First Flight");
-  }
-
-  if (user.water >= 7) {
-    award("💧 Hydration Hoot");
-  }
-
-  if (user.workouts >= 10) {
-    award("👟 Wandering Owl");
-  }
-
-  if (user.selfcare >= 10) {
-    award("🌿 Self-Care Owl");
-  }
-
-  if (user.streak >= 7) {
-    award("🔥 Consistent Owl");
-  }
-
-  if (user.sleep >= 10) {
-    award("🌙 Night Owl");
-  }
-
-  if (user.lifetime_points >= 500) {
-    award("🏆 Nest Champion");
   }
 
   saveBadges(userId, badges);
 
-  return badges;
+  return newlyEarned;
 }
 
 /* =========================
