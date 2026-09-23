@@ -2,110 +2,102 @@ const { SlashCommandBuilder } = require("discord.js");
 
 const commands = [
 
+  // 🪺 CHECK-IN
   new SlashCommandBuilder()
     .setName("checkin")
-    .setDescription("Complete your daily wellness check-in.")
+    .setDescription("Share an open-ended wellness check-in")
     .addStringOption(option =>
       option
-        .setName("mood")
-        .setDescription("How are you feeling?")
+        .setName("response")
+        .setDescription("How are you doing today?")
         .setRequired(true)
-        .addChoices(
-          { name: "😊 Great", value: "great" },
-          { name: "🙂 Good", value: "good" },
-          { name: "😐 Okay", value: "okay" },
-          { name: "😔 Low", value: "low" },
-          { name: "😴 Tired", value: "tired" }
-        )
-    )
-    .addStringOption(option =>
-      option
-        .setName("energy")
-        .setDescription("How is your energy?")
-        .setRequired(true)
-        .addChoices(
-          { name: "⚡ High", value: "high" },
-          { name: "🌿 Medium", value: "medium" },
-          { name: "💤 Low", value: "low" }
-        )
     ),
 
+  // 💧 WATER
   new SlashCommandBuilder()
     .setName("water")
-    .setDescription("Log your water intake.")
+    .setDescription("Log your water intake")
     .addIntegerOption(option =>
       option
         .setName("glasses")
-        .setDescription("Number of glasses of water")
-        .setRequired(true)
+        .setDescription("How many glasses of water did you drink?")
         .setMinValue(1)
+        .setRequired(true)
     ),
 
+  // 👟 STEPS
   new SlashCommandBuilder()
     .setName("steps")
-    .setDescription("Log your steps.")
+    .setDescription("Log your steps")
     .addIntegerOption(option =>
       option
         .setName("count")
-        .setDescription("Number of steps")
-        .setRequired(true)
+        .setDescription("How many steps did you take?")
         .setMinValue(1)
+        .setRequired(true)
     ),
 
+  // 🏃 WORKOUT
   new SlashCommandBuilder()
     .setName("workout")
-    .setDescription("Log a workout or movement activity.")
+    .setDescription("Log movement or exercise")
     .addStringOption(option =>
       option
         .setName("activity")
-        .setDescription("What did you do?")
+        .setDescription("What activity did you do?")
         .setRequired(true)
     )
     .addIntegerOption(option =>
       option
         .setName("minutes")
         .setDescription("How many minutes?")
-        .setRequired(true)
         .setMinValue(1)
+        .setRequired(true)
     ),
 
+  // 😴 SLEEP
   new SlashCommandBuilder()
     .setName("sleep")
-    .setDescription("Log your sleep.")
+    .setDescription("Log your sleep")
     .addNumberOption(option =>
       option
         .setName("hours")
-        .setDescription("Hours of sleep")
-        .setRequired(true)
+        .setDescription("How many hours did you sleep?")
         .setMinValue(0)
         .setMaxValue(24)
+        .setRequired(true)
     ),
 
+  // 🌿 SELF-CARE
   new SlashCommandBuilder()
     .setName("selfcare")
-    .setDescription("Log something you did for yourself.")
+    .setDescription("Log something you did for yourself")
     .addStringOption(option =>
       option
         .setName("activity")
-        .setDescription("What did you do?")
+        .setDescription("What did you do for yourself?")
         .setRequired(true)
     ),
 
+  // 📊 PROGRESS
   new SlashCommandBuilder()
     .setName("progress")
-    .setDescription("View your wellness progress."),
+    .setDescription("View your wellness progress"),
 
+  // 🔥 STREAK
   new SlashCommandBuilder()
     .setName("streak")
-    .setDescription("View your wellness streak."),
+    .setDescription("View your wellness streak"),
 
+  // 🏅 BADGES
   new SlashCommandBuilder()
     .setName("badges")
-    .setDescription("View your earned wellness badges."),
+    .setDescription("View your Nest wellness badges"),
 
+  // 🎯 CHALLENGE
   new SlashCommandBuilder()
     .setName("challenge")
-    .setDescription("View this week's wellness challenge.")
+    .setDescription("View the current Nest wellness challenge")
 
 ];
 
