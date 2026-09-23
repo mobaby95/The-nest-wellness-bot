@@ -474,10 +474,25 @@ client.on("interactionCreate", async (interaction) => {
 
       addPoints(userId, 10);
 
-      updateBadges(userId);
+   const newBadges = updateBadges(userId);
 
       await interaction.reply({
         content:
+          if (newBadges.length > 0) {
+  await interaction.followUp({
+    content:
+      "🏅 NEW BADGE UNLOCKED!\n\n" +
+      newBadges
+        .map(badge =>
+          badge.name +
+          "\n└ " +
+          badge.description
+        )
+        .join("\n\n") +
+      "\n\n🦉 Keep spreading those good Nest vibes!",
+    ephemeral: true
+  });
+}
           "🪺 NEST CHECK-IN\n\n" +
           "Thanks for checking in, " +
           username +
@@ -711,22 +726,60 @@ client.on("interactionCreate", async (interaction) => {
        BADGES
     ========================= */
 
-    else if (interaction.commandName === "badges") {
-      const badges = updateBadges(userId);
+   else if (interaction.commandName === "badges") {
+  const userBadges = getBadges(userId);
 
-      await interaction.reply({
-        content:
-          "🏅 " +
-          username +
-          "'S NEST BADGES\n\n" +
-          (badges.length > 0
-            ? badges
-                .map((badge) => "• " + badge)
-                .join("\n")
-            : "🪺 No badges yet — your first flight is waiting!"),
-        ephemeral: true,
-      });
-    }
+  const earned = BADGES.filter(badge =>
+    userBadges.includes(badge.id)
+  );
+
+  const locked = BADGES.filter(badge =>
+    !userBadges.includes(badge.id)
+  );
+
+  let message =
+    "🏅 " +
+    username +
+    "'S NEST BADGES\n\n";
+
+  message +=
+    "✨ EARNED (" +
+    earned.length +
+    "/" +
+    BADGES.length +
+    ")\n\n";
+
+  if (earned.length > 0) {
+    message += earned
+      .map(badge =>
+        badge.name +
+        "\n└ " +
+        badge.description
+      )
+      .join("\n\n");
+  } else {
+    message +=
+      "🪺 Your first badge is waiting for you!";
+  }
+
+  message += "\n\n🔒 LOCKED\n\n";
+
+  if (locked.length > 0) {
+    message += locked
+      .map(badge =>
+        "🔒 " +
+        badge.name +
+        "\n└ " +
+        badge.description
+      )
+      .join("\n\n");
+  }
+
+  await interaction.reply({
+    content: message,
+    ephemeral: true
+  });
+}
 
     /* =========================
        LEADERBOARD
