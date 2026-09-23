@@ -393,7 +393,58 @@ function updateBadges(userId) {
 
   return newlyEarned;
 }
+/* =========================
+   NEST LEVELS
+========================= */
 
+const NEST_LEVELS = [
+  {
+    name: "🐣 Nestling",
+    minPoints: 0
+  },
+  {
+    name: "🪺 Little Owl",
+    minPoints: 100
+  },
+  {
+    name: "🦉 Cozy Owl",
+    minPoints: 250
+  },
+  {
+    name: "🌿 Wise Owl",
+    minPoints: 500
+  },
+  {
+    name: "🪽 Guardian Owl",
+    minPoints: 1000
+  },
+  {
+    name: "👑 Elder Owl",
+    minPoints: 2000
+  }
+];
+
+function getNestLevel(lifetimePoints) {
+  let currentLevel = NEST_LEVELS[0];
+
+  for (const level of NEST_LEVELS) {
+    if (lifetimePoints >= level.minPoints) {
+      currentLevel = level;
+    }
+  }
+
+  return currentLevel;
+}
+
+function getNextNestLevel(lifetimePoints) {
+  for (const level of NEST_LEVELS) {
+    if (lifetimePoints < level.minPoints) {
+      return level;
+    }
+  }
+
+  return null;
+}
 /* =========================
    DISCORD CLIENT
 ========================= */
@@ -663,19 +714,41 @@ client.on("interactionCreate", async (interaction) => {
           FROM users
           WHERE user_id = ?
         `).get(userId);
+const currentLevel =
+  getNestLevel(currentUser.lifetime_points);
 
+const nextLevel =
+  getNextNestLevel(currentUser.lifetime_points);
+
+let levelProgress = "";
+
+if (nextLevel) {
+  const pointsNeeded =
+    nextLevel.minPoints -
+    currentUser.lifetime_points;
+
+  levelProgress =
+    "\n✨ Next Level: " +
+    nextLevel.name +
+    "\n🪶 " +
+    pointsNeeded +
+    " lifetime points to go";
+} else {
+  levelProgress =
+    "\n👑 You've reached the highest Nest level!";
+}
       await interaction.reply({
         content:
-          "📊 YOUR NEST PROGRESS\n\n" +
-          "🏆 This Week: " +
-          currentUser.weekly_points +
-          " points\n" +
+         "📊 YOUR NEST PROGRESS\n\n" +
+"🦉 Level: " +
+currentLevel.name +
+"\n" +
+"🏆 This Week: " +
           "🪺 Lifetime: " +
-          currentUser.lifetime_points +
-          " points\n" +
-          "🔥 Streak: " +
-          currentUser.streak +
-          " day(s)\n\n" +
+currentUser.lifetime_points +
+" points\n" +
+          levelProgress +
+"\n" +
           "💬 Check-ins: " +
           currentUser.checkins +
           "\n" +
