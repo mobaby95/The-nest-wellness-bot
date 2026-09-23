@@ -708,70 +708,76 @@ client.on("interactionCreate", async (interaction) => {
     ========================= */
 
     else if (interaction.commandName === "progress") {
-      const currentUser =
-        db.prepare(`
-          SELECT *
-          FROM users
-          WHERE user_id = ?
-        `).get(userId);
-const currentLevel =
-  getNestLevel(currentUser.lifetime_points);
+  const currentUser =
+    db.prepare(`
+      SELECT *
+      FROM users
+      WHERE user_id = ?
+    `).get(userId);
 
-const nextLevel =
-  getNextNestLevel(currentUser.lifetime_points);
+  const currentLevel =
+    getNestLevel(currentUser.lifetime_points);
 
-let levelProgress = "";
+  const nextLevel =
+    getNextNestLevel(currentUser.lifetime_points);
 
-if (nextLevel) {
-  const pointsNeeded =
-    nextLevel.minPoints -
-    currentUser.lifetime_points;
+  let levelProgress = "";
 
-  levelProgress =
-    "\n✨ Next Level: " +
-    nextLevel.name +
-    "\n🪶 " +
-    pointsNeeded +
-    " lifetime points to go";
-} else {
-  levelProgress =
-    "\n👑 You've reached the highest Nest level!";
+  if (nextLevel) {
+    const pointsNeeded =
+      nextLevel.minPoints -
+      currentUser.lifetime_points;
+
+    levelProgress =
+      "\n✨ Next Level: " +
+      nextLevel.name +
+      "\n🪶 " +
+      pointsNeeded +
+      " lifetime points to go";
+  } else {
+    levelProgress =
+      "\n👑 You've reached the highest Nest level!";
+  }
+
+  await interaction.reply({
+    content:
+      "📊 YOUR NEST PROGRESS\n\n" +
+      "🦉 Level: " +
+      currentLevel.name +
+      "\n" +
+      "🏆 This Week: " +
+      currentUser.weekly_points +
+      " points\n" +
+      "🪺 Lifetime: " +
+      currentUser.lifetime_points +
+      " points\n" +
+      levelProgress +
+      "\n\n" +
+      "🔥 Streak: " +
+      currentUser.streak +
+      " day(s)\n\n" +
+      "💬 Check-ins: " +
+      currentUser.checkins +
+      "\n" +
+      "💧 Water logs: " +
+      currentUser.water +
+      "\n" +
+      "👟 Steps: " +
+      currentUser.steps.toLocaleString() +
+      "\n" +
+      "🏃 Workouts: " +
+      currentUser.workouts +
+      "\n" +
+      "😴 Sleep logs: " +
+      currentUser.sleep +
+      "\n" +
+      "🌿 Self-care: " +
+      currentUser.selfcare +
+      "\n\n" +
+      "🪺 Keep taking those little steps!",
+    ephemeral: true,
+  });
 }
-      await interaction.reply({
-        content:
-         "📊 YOUR NEST PROGRESS\n\n" +
-"🦉 Level: " +
-currentLevel.name +
-"\n" +
-"🏆 This Week: " +
-          "🪺 Lifetime: " +
-currentUser.lifetime_points +
-" points\n" +
-          levelProgress +
-"\n" +
-          "💬 Check-ins: " +
-          currentUser.checkins +
-          "\n" +
-          "💧 Water logs: " +
-          currentUser.water +
-          "\n" +
-          "👟 Steps: " +
-          currentUser.steps.toLocaleString() +
-          "\n" +
-          "🏃 Workouts: " +
-          currentUser.workouts +
-          "\n" +
-          "😴 Sleep logs: " +
-          currentUser.sleep +
-          "\n" +
-          "🌿 Self-care: " +
-          currentUser.selfcare +
-          "\n\n" +
-          "🪺 Keep taking those little steps!",
-        ephemeral: true,
-      });
-    }
-
     /* =========================
        STREAK
     ========================= */
