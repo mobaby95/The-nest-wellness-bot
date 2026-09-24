@@ -1052,7 +1052,62 @@ if (interaction.commandName === "journal") {
     " Nest Points!"
   );
 }
+      
+ /* =========================
+       ADMIN — SET CHALLENGE
+    ========================= */
 
+    else if (interaction.commandName === "setchallenge") {
+
+      // Make sure only administrators can change the challenge
+      if (!interaction.memberPermissions?.has("Administrator")) {
+        await interaction.reply({
+          content:
+            "🦉 Only Nest administrators can change the weekly challenge.",
+          ephemeral: true
+        });
+
+        return;
+      }
+
+      const title =
+        interaction.options.getString("title");
+
+      const description =
+        interaction.options.getString("description");
+
+      const reward =
+        interaction.options.getInteger("reward");
+
+      db.prepare(`
+        UPDATE nest_challenge
+        SET title = ?, description = ?, reward = ?
+        WHERE id = 1
+      `).run(
+        title,
+        description,
+        reward
+      );
+
+      await interaction.reply({
+        content:
+          "🎯 NEST CHALLENGE UPDATED!\n\n" +
+          title +
+          "\n\n" +
+          description +
+          "\n\n" +
+          "🎁 Reward: " +
+          reward +
+          " Nest Points\n\n" +
+          "🦉 The new challenge is now live!",
+        ephemeral: true
+      });
+
+      console.log(
+        "Nest challenge updated by " +
+        interaction.user.username
+      );
+    }
 /* =========================
    START BOT
 ========================= */
