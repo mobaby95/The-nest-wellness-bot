@@ -482,6 +482,7 @@ async function registerCommands() {
 
 client.once("ready", () => {
   console.log("The Nest Wellness Bot is online!");
+  console.log("🦉 NEST LEVEL SYSTEM VERSION 2 IS RUNNING");
   console.log("Logged in as " + client.user.tag);
 });
 
