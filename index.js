@@ -621,7 +621,7 @@ console.log(
    JOURNAL
 ========================= */
 
-if (interaction.commandName === "journal") {
+else if (interaction.commandName === "journal") {
   const entries = db.prepare(`
     SELECT response, created_at
     FROM checkins
