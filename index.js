@@ -590,6 +590,62 @@ console.log(
     " completed a wellness check-in."
 );
     }
+      /* =========================
+   JOURNAL
+========================= */
+
+if (interaction.commandName === "journal") {
+  const entries = db.prepare(`
+    SELECT response, created_at
+    FROM checkins
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+  `).all(userId);
+
+  if (entries.length === 0) {
+    await interaction.reply({
+      content:
+        "📖 YOUR NEST JOURNAL\n\n" +
+        "Your journal is empty right now.\n\n" +
+        "🪺 Complete a /checkin to add your first entry!",
+      ephemeral: true
+    });
+
+    return;
+  }
+
+  let journalMessage =
+    "📖 YOUR NEST JOURNAL\n\n" +
+    "Here are your most recent check-ins:\n\n";
+
+  for (const entry of entries) {
+    const date = new Date(entry.created_at);
+
+    const formattedDate =
+      date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+
+    journalMessage +=
+      "🪶 **" + formattedDate + "**\n" +
+      entry.response.substring(0, 400) +
+      (entry.response.length > 400 ? "..." : "") +
+      "\n\n";
+  }
+
+  journalMessage +=
+    "🔒 This journal is private to you.";
+
+  await interaction.reply({
+    content: journalMessage,
+    ephemeral: true
+  });
+
+  return;
+}
     /* =========================
        WATER
     ========================= */
