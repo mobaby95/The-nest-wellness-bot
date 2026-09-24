@@ -76,6 +76,30 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS nest_challenge (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    reward INTEGER NOT NULL
+  )
+`);
+
+const existingChallenge = db
+  .prepare("SELECT * FROM nest_challenge WHERE id = 1")
+  .get();
+
+if (!existingChallenge) {
+  db.prepare(`
+    INSERT INTO nest_challenge
+    (id, title, description, reward)
+    VALUES (1, ?, ?, ?)
+  `).run(
+    "🦉 MOVE YOUR WINGS",
+    "Log movement on 5 different days this week.",
+    25
+  );
+}
 /* =========================
    DATE HELPERS
 ========================= */
@@ -999,39 +1023,35 @@ if (interaction.commandName === "journal") {
     ========================= */
 
     else if (interaction.commandName === "challenge") {
-      await interaction.reply(
-        "🎯 THIS WEEK'S NEST CHALLENGE\n\n" +
-        "🦉 MOVE YOUR WINGS\n\n" +
-        "Log movement on 5 different days this week.\n\n" +
-        "Complete the challenge and earn 25 Nest Points!"
-      );
-    }
+  const challenge = db
+    .prepare(`
+      SELECT title, description, reward
+      FROM nest_challenge
+      WHERE id = 1
+    `)
+    .get();
 
-  } catch (error) {
-    console.error("Interaction error:", error);
+  if (!challenge) {
+    await interaction.reply({
+      content:
+        "🦉 No Nest challenge has been set yet.",
+      ephemeral: true
+    });
 
-    try {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({
-          content:
-            "🦉 Something went wrong. Please try again!",
-          ephemeral: true,
-        });
-      } else {
-        await interaction.reply({
-          content:
-            "🦉 Something went wrong. Please try again!",
-          ephemeral: true,
-        });
-      }
-    } catch (replyError) {
-      console.error(
-        "Could not send error response:",
-        replyError
-      );
-    }
+    return;
   }
-});
+
+  await interaction.reply(
+    "🎯 THIS WEEK'S NEST CHALLENGE\n\n" +
+    challenge.title +
+    "\n\n" +
+    challenge.description +
+    "\n\n" +
+    "Complete the challenge and earn " +
+    challenge.reward +
+    " Nest Points!"
+  );
+}
 
 /* =========================
    START BOT
