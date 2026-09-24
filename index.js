@@ -564,7 +564,7 @@ if (newBadges.length > 0) {
         )
         .join("\n\n") +
       "\n\n🦉 Keep spreading those good Nest vibes!",
-    ephemeral: true
+    ephemeral: false
   });
 }
 
