@@ -529,8 +529,20 @@ client.on("interactionCreate", async (interaction) => {
    const newBadges = updateBadges(userId);
 
       await interaction.reply({
-        content:
-          if (newBadges.length > 0) {
+  content:
+    "🪺 NEST CHECK-IN\n\n" +
+    "Thanks for checking in, " +
+    username +
+    "!\n\n" +
+    "Your check-in has been recorded privately.\n\n" +
+    "💫 +10 Nest Points\n" +
+    "🔥 Current streak: " +
+    currentStreak +
+    " day(s)",
+  ephemeral: true,
+});
+
+if (newBadges.length > 0) {
   await interaction.followUp({
     content:
       "🏅 NEW BADGE UNLOCKED!\n\n" +
@@ -545,23 +557,11 @@ client.on("interactionCreate", async (interaction) => {
     ephemeral: true
   });
 }
-          "🪺 NEST CHECK-IN\n\n" +
-          "Thanks for checking in, " +
-          username +
-          "!\n\n" +
-          "Your check-in has been recorded privately.\n\n" +
-          "💫 +10 Nest Points\n" +
-          "🔥 Current streak: " +
-          currentStreak +
-          " day(s)",
-        ephemeral: true,
-      });
 
-      console.log(
-        username +
-          " completed a wellness check-in."
-      );
-    }
+console.log(
+  username +
+    " completed a wellness check-in."
+);
 
     /* =========================
        WATER
