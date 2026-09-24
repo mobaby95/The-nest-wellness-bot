@@ -474,6 +474,10 @@ function getNextNestLevel(lifetimePoints) {
       return level;
     }
   }
+
+  return null;
+}
+
 function getPreviousNestLevel(lifetimePoints) {
   let previousLevel = NEST_LEVELS[0];
 
@@ -484,8 +488,6 @@ function getPreviousNestLevel(lifetimePoints) {
   }
 
   return previousLevel;
-}
-  return null;
 }
 /* =========================
    DISCORD CLIENT
@@ -1108,6 +1110,22 @@ else if (interaction.commandName === "journal") {
         interaction.user.username
       );
     }
+
+     } catch (error) {
+    console.error(
+      "Interaction error:",
+      error
+    );
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content:
+          "🦉 Something went wrong in The Nest.",
+        ephemeral: true
+      });
+    }
+  }
+});
 /* =========================
    START BOT
 ========================= */
