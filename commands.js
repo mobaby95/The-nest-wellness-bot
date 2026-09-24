@@ -108,15 +108,28 @@ const commands = [
     .setDescription("View the current Nest challenge"),
 
   // 🛠️ ADMIN — SET CHALLENGE
-new SlashCommandBuilder()
-  .setName("setchallenge")
-  .setDescription("Set the current Nest weekly challenge")
-  .addStringOption(option =>
-    option
-      .setName("challenge")
-      .setDescription("The new weekly challenge")
-      .setRequired(true)
-  )
+  new SlashCommandBuilder()
+    .setName("setchallenge")
+    .setDescription("Set the current Nest weekly challenge")
+    .addStringOption(option =>
+      option
+        .setName("title")
+        .setDescription("The challenge title")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option
+        .setName("description")
+        .setDescription("What members need to do")
+        .setRequired(true)
+    )
+    .addIntegerOption(option =>
+      option
+        .setName("reward")
+        .setDescription("Nest Points reward")
+        .setMinValue(0)
+        .setRequired(true)
+    )
 ];
 
 module.exports = commands.map(command => command.toJSON());
