@@ -12,7 +12,10 @@ const commands = [
         .setDescription("How are you doing today?")
         .setRequired(true)
     ),
-
+  new SlashCommandBuilder()
+  .setName("journal")
+  .setDescription("View your recent private Nest Journal entries."),
+  
   // 💧 WATER
   new SlashCommandBuilder()
     .setName("water")
