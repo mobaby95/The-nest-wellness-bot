@@ -39,7 +39,15 @@ try {
   console.error(error);
   process.exit(1);
 }
-
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS checkins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    username TEXT NOT NULL,
+    response TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )
+`).run();
 /* =========================
    DATABASE TABLE
 ========================= */
@@ -524,7 +532,16 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "checkin") {
       const response =
         interaction.options.getString("response");
-
+db.prepare(`
+  INSERT INTO checkins
+  (user_id, username, response, created_at)
+  VALUES (?, ?, ?, ?)
+`).run(
+  userId,
+  username,
+  response,
+  new Date().toISOString()
+);
       const currentStreak =
         updateCheckinStreak(userId);
 
