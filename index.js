@@ -442,7 +442,17 @@ function getNextNestLevel(lifetimePoints) {
       return level;
     }
   }
+function getPreviousNestLevel(lifetimePoints) {
+  let previousLevel = NEST_LEVELS[0];
 
+  for (const level of NEST_LEVELS) {
+    if (lifetimePoints >= level.minPoints) {
+      previousLevel = level;
+    }
+  }
+
+  return previousLevel;
+}
   return null;
 }
 /* =========================
