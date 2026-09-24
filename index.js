@@ -562,7 +562,7 @@ console.log(
   username +
     " completed a wellness check-in."
 );
-
+    }
     /* =========================
        WATER
     ========================= */
