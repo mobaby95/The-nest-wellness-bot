@@ -573,6 +573,9 @@ if (newBadges.length > 0) {
   await interaction.followUp({
     content:
       "🏅 NEW BADGE UNLOCKED!\n\n" +
+      "🦉 " +
+      username +
+      " just earned:\n\n" +
       newBadges
         .map(badge =>
           badge.name +
