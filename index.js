@@ -1222,6 +1222,192 @@ else if (interaction.commandName === "journal") {
         );
       }
     }
+
+    /* =========================
+       🪺 NAUGHTY NEST — JAIL
+    ========================= */
+
+    else if (interaction.commandName === "jail") {
+      await interaction.deferReply({ ephemeral: true });
+
+      if (!interaction.inGuild()) {
+        await interaction.editReply("This command must be used in a server.");
+        return;
+      }
+
+      if (!interaction.memberPermissions?.has("ManageRoles")) {
+        await interaction.editReply("🦉 You need Manage Roles permission to jail someone.");
+        return;
+      }
+
+      const targetUser = interaction.options.getUser("member");
+      const minutes = interaction.options.getInteger("minutes");
+      const reason =
+        interaction.options.getString("reason") ||
+        "Mischievous Nest behavior";
+
+      const roleId = process.env.JAILBIRD_ROLE_ID;
+      const guild = interaction.guild;
+
+      if (!roleId) {
+        await interaction.editReply("⚠️ JAILBIRD_ROLE_ID is missing from Railway variables.");
+        return;
+      }
+
+      const jailRole = await guild.roles.fetch(roleId).catch(() => null);
+      const member = await guild.members.fetch(targetUser.id).catch(() => null);
+
+      if (!jailRole || !member) {
+        await interaction.editReply("⚠️ I couldn't find the Jailbird role or that server member.");
+        return;
+      }
+
+      const botMember = await guild.members.fetchMe();
+
+      if (
+        !botMember.permissions.has("ManageRoles") ||
+        botMember.roles.highest.position <= jailRole.position
+      ) {
+        await interaction.editReply("⚠️ Hootie needs Manage Roles permission and a role above Jailbird.");
+        return;
+      }
+
+      if (
+        targetUser.id === guild.ownerId ||
+        targetUser.bot ||
+        targetUser.id === interaction.user.id
+      ) {
+        await interaction.editReply("🦉 You can't jail the server owner, a bot, or yourself.");
+        return;
+      }
+
+      const moderator = await guild.members.fetch(interaction.user.id);
+
+      if (
+        interaction.user.id !== guild.ownerId &&
+        member.roles.highest.position >= moderator.roles.highest.position
+      ) {
+        await interaction.editReply("⚠️ You can't jail someone whose highest role is equal to or above yours.");
+        return;
+      }
+
+      const now = new Date();
+      const releaseAt = new Date(now.getTime() + minutes * 60_000);
+
+      try {
+        await member.roles.add(jailRole, reason);
+
+        db.prepare(`
+          INSERT INTO jail_sentences
+            (user_id, guild_id, moderator_id, reason, jailed_at, release_at)
+          VALUES (?, ?, ?, ?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET
+            guild_id = excluded.guild_id,
+            moderator_id = excluded.moderator_id,
+            reason = excluded.reason,
+            jailed_at = excluded.jailed_at,
+            release_at = excluded.release_at
+        `).run(
+          member.id,
+          guild.id,
+          interaction.user.id,
+          reason,
+          now.toISOString(),
+          releaseAt.toISOString()
+        );
+
+        await interaction.editReply(
+          "🪺 **NAUGHTY NEST SENTENCE ISSUED!**\n\n" +
+          "🐦 Member: " + member.user.tag + "\n" +
+          "📜 Reason: " + reason + "\n" +
+          "⏰ Sentence: " + minutes + " minute(s)\n" +
+          "🔓 Release: <t:" +
+          Math.floor(releaseAt.getTime() / 1000) +
+          ":F>\n\n" +
+          "The Jailbird role has been assigned. 🦉"
+        );
+      } catch (error) {
+        console.error("Jail command failed:", error);
+        await interaction.editReply(
+          "⚠️ The jail action failed. Check Railway logs and Hootie's role permissions."
+        );
+      }
+    }
+
+    /* =========================
+       🔓 NAUGHTY NEST — MANUAL RELEASE
+    ========================= */
+
+    else if (interaction.commandName === "release") {
+      await interaction.deferReply({ ephemeral: true });
+
+      if (!interaction.inGuild()) {
+        await interaction.editReply("This command must be used in a server.");
+        return;
+      }
+
+      if (!interaction.memberPermissions?.has("ManageRoles")) {
+        await interaction.editReply("🦉 You need Manage Roles permission to release someone.");
+        return;
+      }
+
+      const targetUser = interaction.options.getUser("member");
+      const roleId = process.env.JAILBIRD_ROLE_ID;
+      const guild = interaction.guild;
+
+      if (!roleId) {
+        await interaction.editReply("⚠️ JAILBIRD_ROLE_ID is missing from Railway variables.");
+        return;
+      }
+
+      const jailRole = await guild.roles.fetch(roleId).catch(() => null);
+      const member = await guild.members.fetch(targetUser.id).catch(() => null);
+
+      if (!jailRole || !member) {
+        await interaction.editReply("⚠️ I couldn't find the Jailbird role or that server member.");
+        return;
+      }
+
+      const botMember = await guild.members.fetchMe();
+
+      if (
+        !botMember.permissions.has("ManageRoles") ||
+        botMember.roles.highest.position <= jailRole.position
+      ) {
+        await interaction.editReply("⚠️ Hootie needs Manage Roles permission and a role above Jailbird.");
+        return;
+      }
+
+      if (targetUser.id === guild.ownerId) {
+        await interaction.editReply("🦉 The server owner can't be released through this command.");
+        return;
+      }
+
+      try {
+        if (member.roles.cache.has(roleId)) {
+          await member.roles.remove(
+            jailRole,
+            "Manually released from the Naughty Nest"
+          );
+        }
+
+        db.prepare(`
+          DELETE FROM jail_sentences
+          WHERE user_id = ? AND guild_id = ?
+        `).run(member.id, guild.id);
+
+        await interaction.editReply(
+          "🔓 **RELEASED FROM THE NAUGHTY NEST!**\n\n" +
+          "🐦 " + member.user.tag +
+          " has been released. Welcome back! 🦉"
+        );
+      } catch (error) {
+        console.error("Manual release failed:", error);
+        await interaction.editReply(
+          "⚠️ The release failed. Check Railway logs and Hootie's role permissions."
+        );
+      }
+    }
      } catch (error) {
     console.error(
       "Interaction error:",
