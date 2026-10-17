@@ -567,6 +567,11 @@ client.once("ready", () => {
 ========================= */
 
 client.on("interactionCreate", async (interaction) => {
+  console.log(
+    "INTERACTION RECEIVED:",
+    interaction.commandName || "not a slash command"
+  );
+
   if (!interaction.isChatInputCommand()) {
     return;
   }
