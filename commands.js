@@ -143,7 +143,42 @@ const commands = [
       subcommand
         .setName("end")
         .setDescription("End the Last Letter game in this channel")
+    ),
+   // 🪺 NAUGHTY NEST JAIL COMMANDS
+  new SlashCommandBuilder()
+    .setName("jail")
+    .setDescription("Send a mischievous Nestling to the Naughty Nest")
+    .addUserOption(option =>
+      option
+        .setName("member")
+        .setDescription("The member being sent to jail")
+        .setRequired(true)
     )
+    .addIntegerOption(option =>
+      option
+        .setName("minutes")
+        .setDescription("How many minutes the sentence lasts (1–10080)")
+        .setMinValue(1)
+        .setMaxValue(10080)
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option
+        .setName("reason")
+        .setDescription("Their silly server crime")
+        .setMaxLength(200)
+        .setRequired(false)
+    ),
+
+  new SlashCommandBuilder()
+    .setName("release")
+    .setDescription("Release a Jailbird from the Naughty Nest")
+    .addUserOption(option =>
+      option
+        .setName("member")
+        .setDescription("The member to release")
+        .setRequired(true)
+    ),
 ];
 
 module.exports = commands.map(command => command.toJSON());
