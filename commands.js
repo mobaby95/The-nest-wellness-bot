@@ -130,6 +130,20 @@ const commands = [
         .setMinValue(0)
         .setRequired(true)
     )
+  // 🪶 NEST WORD CHAIN GAME
+  new SlashCommandBuilder()
+    .setName("wordgame")
+    .setDescription("Play The Nest Last Letter word game")
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName("start")
+        .setDescription("Start a Last Letter game in this channel")
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName("end")
+        .setDescription("End the Last Letter game in this channel")
+    )
 ];
 
 module.exports = commands.map(command => command.toJSON());
