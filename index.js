@@ -1320,6 +1320,98 @@ client.on("messageCreate", async (message) => {
   }
 });
 /* =========================
+   🪺 NAUGHTY NEST — AUTOMATIC JAIL RELEASE
+========================= */
+
+async function processExpiredJails() {
+  try {
+    const expiredJails = db.prepare(`
+      SELECT * FROM jail_sentences
+      WHERE release_at <= ?
+    `).all(new Date().toISOString());
+
+    for (const sentence of expiredJails) {
+      try {
+        const guild =
+          client.guilds.cache.get(sentence.guild_id) ||
+          await client.guilds.fetch(sentence.guild_id);
+
+        const member = await guild.members
+          .fetch(sentence.user_id)
+          .catch(() => null);
+
+        // Remove the record if the member has left the server
+        if (!member) {
+          db.prepare(`
+            DELETE FROM jail_sentences
+            WHERE user_id = ? AND guild_id = ?
+          `).run(sentence.user_id, sentence.guild_id);
+
+          continue;
+        }
+
+        const roleId = process.env.JAILBIRD_ROLE_ID;
+        const jailRole = guild.roles.cache.get(roleId);
+
+        // Keep the record so the bot can retry if the role is missing
+        if (!jailRole) {
+          console.error("Jailbird role not found. Check JAILBIRD_ROLE_ID.");
+          continue;
+        }
+
+        // Remove the role if the member still has it
+        if (member.roles.cache.has(roleId)) {
+          try {
+            await member.roles.remove(
+              jailRole,
+              "Naughty Nest sentence completed"
+            );
+          } catch (error) {
+            console.error(
+              `Could not release ${sentence.user_id}:`,
+              error
+            );
+            continue;
+          }
+        }
+
+        // Clear the sentence after successful release
+        db.prepare(`
+          DELETE FROM jail_sentences
+          WHERE user_id = ? AND guild_id = ?
+        `).run(sentence.user_id, sentence.guild_id);
+
+        console.log(
+          `Automatically released ${member.user.tag} from the Naughty Nest.`
+        );
+
+        // Announce the release if the server has a system channel
+        if (guild.systemChannel) {
+          await guild.systemChannel.send(
+            `🔓 **AUTOMATIC RELEASE!**\n` +
+            `🐦 ${member} has served their time in **The Naughty Nest**. ` +
+            `Welcome back! 🦉`
+          ).catch(error => {
+            console.error("Release announcement failed:", error);
+          });
+        }
+      } catch (error) {
+        console.error("Automatic jail release failed:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Jail release checker error:", error);
+  }
+}
+
+// Start checking every 30 seconds once Hootie is online
+client.once("clientReady", () => {
+  console.log("🪺 Naughty Nest automatic release checker started.");
+
+  processExpiredJails();
+  setInterval(processExpiredJails, 30_000);
+});
+/* =========================
    START BOT
 ========================= */
 
