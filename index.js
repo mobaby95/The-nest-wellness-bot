@@ -1219,6 +1219,93 @@ else if (interaction.commandName === "journal") {
   }
 });
 /* =========================
+   🪶 LAST LETTER GAME — CHAT LISTENER
+========================= */
+
+client.on("messageCreate", async (message) => {
+  try {
+    // Ignore bots, DMs, and messages that aren't one word
+    if (message.author.bot || !message.guild) return;
+
+    const word = message.content.trim();
+
+    if (!/^[a-zA-Z]+$/.test(word)) return;
+
+    const channelId = message.channel.id;
+
+    // Check whether a game is active in this channel
+    const game = db.prepare(
+      "SELECT * FROM word_games WHERE channel_id = ?"
+    ).get(channelId);
+
+    if (!game) return;
+
+    const normalizedWord = word.toLowerCase();
+    const currentWord = game.current_word.toLowerCase();
+    const usedWords = JSON.parse(game.used_words || "[]")
+      .map(w => w.toLowerCase());
+
+    // Require the next word to start with the previous word's last letter
+    const requiredLetter = currentWord.slice(-1);
+
+    if (normalizedWord[0] !== requiredLetter) {
+      await message.reply(
+        `🪶 Your word needs to start with **${requiredLetter.toUpperCase()}**!`
+      );
+      return;
+    }
+
+    // Prevent consecutive turns by the same player
+    if (game.last_player_id === message.author.id) {
+      await message.reply(
+        "🦉 Give another Nestling a turn before playing again!"
+      );
+      return;
+    }
+
+    // Prevent repeated words
+    if (usedWords.includes(normalizedWord)) {
+      await message.reply(
+        "🪺 That word has already been used! Try another one."
+      );
+      return;
+    }
+
+    // Save the accepted word and update the game
+    usedWords.push(normalizedWord);
+
+    db.prepare(`
+      UPDATE word_games
+      SET current_word = ?,
+          used_words = ?,
+          last_player_id = ?,
+          words_played = words_played + 1
+      WHERE channel_id = ?
+    `).run(
+      normalizedWord,
+      JSON.stringify(usedWords),
+      message.author.id,
+      channelId
+    );
+
+    // Award 5 Nest Points
+    getUser(
+      message.author.id,
+      message.author.globalName || message.author.username || "Nest Member"
+    );
+
+    addPoints(message.author.id, 5);
+
+    await message.reply(
+      `🪶 **${word}** counts! +5 Nest Points!\n` +
+      `Next word starts with **${normalizedWord.slice(-1).toUpperCase()}**.`
+    );
+
+  } catch (error) {
+    console.error("Word game error:", error);
+  }
+});
+/* =========================
    START BOT
 ========================= */
 
