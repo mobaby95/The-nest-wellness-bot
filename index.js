@@ -101,6 +101,20 @@ if (!existingChallenge) {
   );
 }
 /* =========================
+   LAST LETTER GAME DATABASE
+========================= */
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS word_games (
+    channel_id TEXT PRIMARY KEY,
+    current_word TEXT NOT NULL,
+    used_words TEXT NOT NULL DEFAULT '[]',
+    last_player_id TEXT,
+    words_played INTEGER NOT NULL DEFAULT 0,
+    started_at TEXT NOT NULL
+  )
+`);
+/* =========================
    DATE HELPERS
 ========================= */
 
