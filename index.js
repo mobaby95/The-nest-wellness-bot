@@ -115,6 +115,20 @@ db.exec(`
   )
 `);
 /* =========================
+   🪺 JAIL SYSTEM DATABASE
+========================= */
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS jail_sentences (
+    user_id TEXT PRIMARY KEY,
+    guild_id TEXT NOT NULL,
+    moderator_id TEXT NOT NULL,
+    reason TEXT,
+    jailed_at TEXT NOT NULL,
+    release_at TEXT NOT NULL
+  )
+`);
+/* =========================
    DATE HELPERS
 ========================= */
 
