@@ -1228,7 +1228,7 @@ else if (interaction.commandName === "journal") {
     ========================= */
 
     else if (interaction.commandName === "jail") {
-      await interaction.deferReply({ ephemeral: true });
+     await interaction.deferReply();
 
       if (!interaction.inGuild()) {
         await interaction.editReply("This command must be used in a server.");
