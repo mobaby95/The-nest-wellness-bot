@@ -129,7 +129,7 @@ const commands = [
         .setDescription("Nest Points reward")
         .setMinValue(0)
         .setRequired(true)
-    )
+    ),
   // 🪶 NEST WORD CHAIN GAME
   new SlashCommandBuilder()
     .setName("wordgame")
