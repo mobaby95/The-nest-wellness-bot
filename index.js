@@ -1129,6 +1129,80 @@ else if (interaction.commandName === "journal") {
       );
     }
 
+     /* =========================
+       🪶 LAST LETTER WORD GAME
+    ========================= */
+
+    else if (interaction.commandName === "wordgame") {
+      if (!interaction.memberPermissions?.has("Administrator")) {
+        await interaction.reply({
+          content: "🦉 Only Nest administrators can start or end the word game.",
+          ephemeral: true
+        });
+        return;
+      }
+
+      const subcommand = interaction.options.getSubcommand();
+      const channelId = interaction.channelId;
+
+      if (subcommand === "start") {
+        const existingGame = db.prepare(
+          "SELECT channel_id FROM word_games WHERE channel_id = ?"
+        ).get(channelId);
+
+        if (existingGame) {
+          await interaction.reply({
+            content: "🪶 A Last Letter game is already running in this channel!",
+            ephemeral: true
+          });
+          return;
+        }
+
+        db.prepare(`
+          INSERT INTO word_games
+          (channel_id, current_word, used_words, last_player_id, words_played, started_at)
+          VALUES (?, ?, ?, NULL, 0, ?)
+        `).run(
+          channelId,
+          "NEST",
+          JSON.stringify(["nest"]),
+          new Date().toISOString()
+        );
+
+        await interaction.reply(
+          "🪶 **THE NEST LAST LETTER GAME IS ON!**\n\n" +
+          "Start with a word beginning with **T** (the last letter of NEST).\n" +
+          "Each new word must start with the last letter of the previous word.\n\n" +
+          "• Use one word per message\n" +
+          "• No repeating words\n" +
+          "• No taking consecutive turns\n" +
+          "• Earn **5 Nest Points** for each valid word\n\n" +
+          "🦉 Let the word chain begin!"
+        );
+      } else if (subcommand === "end") {
+        const game = db.prepare(
+          "SELECT words_played FROM word_games WHERE channel_id = ?"
+        ).get(channelId);
+
+        if (!game) {
+          await interaction.reply({
+            content: "🪶 There isn't a word game running in this channel.",
+            ephemeral: true
+          });
+          return;
+        }
+
+        db.prepare(
+          "DELETE FROM word_games WHERE channel_id = ?"
+        ).run(channelId);
+
+        await interaction.reply(
+          "🦉 **THE NEST WORD GAME HAS ENDED!**\n\n" +
+          "Words played: **" + game.words_played + "**\n" +
+          "Thanks for playing, Nestlings! 🪺"
+        );
+      }
+    }
      } catch (error) {
     console.error(
       "Interaction error:",
